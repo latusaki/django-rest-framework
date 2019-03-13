@@ -223,6 +223,18 @@ class TestInstanceView(TestCase):
         updated = self.objects.get(id=1)
         assert updated.text == 'foobar'
 
+    def test_patch_instance_view_bad_request(self):
+        """
+        PATCH requests to RetrieveUpdateDestroyAPIView with invalid keys should raise 403
+        """
+        data = {'bad_key': 'foobar'}
+        request = factory.patch('/1', data, format='json')
+
+        with self.assertNumQueries(EXPECTED_QUERIES_FOR_PUT):
+            response = self.view(request, pk=1).render()
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.data == {'id': 1, 'text': 'foobar'}
+
     def test_patch_instance_view(self):
         """
         PATCH requests to RetrieveUpdateDestroyAPIView should update an object.
